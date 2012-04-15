@@ -40,6 +40,7 @@ enum {
 @synthesize lastSequenceNumber = _lastSequenceNumber;
 @synthesize filter = _filter;
 @synthesize filterParams = _filterParams;
+@synthesize feed = _feed;
 
 
 - (id)initWithDatabase: (CouchDatabase*)database delegate: (NSObject <CouchChangeDelegate>*)delegate {
@@ -82,19 +83,21 @@ enum {
     NSDictionary* change = $castIf(NSDictionary, [RESTBody JSONObjectWithString: line]);
     if (change) {
         [_delegate tracker: self receivedChange: change];
-    } else {
-        Warn(@"Received unparseable change line from server: %@", line);
     }
 }
 
 
 - (BOOL) start {
-    NSAssert(!_trackingInput, @"Already started");
-    
+    if (_trackingInput) {
+        return YES;
+    }
+
     NSURL* url = _database.URL;
     NSMutableString *path = [NSMutableString stringWithFormat:
-                         @"/%@/_changes?feed=continuous&heartbeat=300000&since=%u",
-                         _database.relativePath, _lastSequenceNumber];
+                         @"/%@/_changes?feed=%@&heartbeat=300000&since=%u",
+                         _database.relativePath,
+                         _feed == CouchChangeFeedLongPoll ? @"longpoll" : @"continuous",
+                         _lastSequenceNumber];
 
     if (_filter) {
         [path appendFormat: @"&filter=%@", _filter];
@@ -290,7 +293,7 @@ enum {
             COUCHLOG(@"%@: EndEncountered %@", self, stream);
             if (_inputBuffer.length > 0)
                 Warn(@"%@ connection closed with unparsed data in buffer", self);
-            [self stop];
+            [self errorOccurred:nil];
             break;
         case NSStreamEventErrorOccurred:
             COUCHLOG(@"%@: ErrorOccurred %@: %@", self, stream, stream.streamError);

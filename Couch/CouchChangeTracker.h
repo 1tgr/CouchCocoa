@@ -25,6 +25,10 @@
 
 @end
 
+typedef enum {
+    CouchChangeFeedContinuous,
+    CouchChangeFeedLongPoll
+} CouchChangeFeed;
 
 /** Reads the continuous-mode _changes feed of a database, and sends the individual lines to -[CouchChangeDelegate receivedChange:]. */
 @interface CouchChangeTracker : NSObject <NSStreamDelegate>
@@ -46,7 +50,8 @@
 
 @property (nonatomic) NSUInteger lastSequenceNumber;
 @property (nonatomic, retain) NSString *filter;
-@property (nonatomic, readonly) NSMutableDictionary *filterParams;
+@property (readonly, retain) NSMutableDictionary *filterParams;
+@property (nonatomic) CouchChangeFeed feed;
 
 - (BOOL) start;
 - (void) stop;
