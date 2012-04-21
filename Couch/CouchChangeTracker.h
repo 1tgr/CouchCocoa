@@ -37,6 +37,9 @@ typedef enum {
     CouchDatabase* _database;
     NSObject <CouchChangeDelegate>* _delegate;
     NSUInteger _lastSequenceNumber;
+    NSString *_filter;
+    NSMutableDictionary *_filterParams;
+    CouchChangeFeed _feed;
     NSInputStream* _trackingInput;
     NSOutputStream* _trackingOutput;
     NSString* _trackingRequest;
