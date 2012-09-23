@@ -182,7 +182,7 @@ NSString* const kCouchDocumentChangeNotification = @"CouchDocumentChange";
                 return revision;
             }
         }
-        return (id)nil;
+        return (CouchRevision*)nil;
     }];
 }
 
